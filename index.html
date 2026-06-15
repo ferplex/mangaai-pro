@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangaAI Pro - Generador de Imágenes con IA</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #9b59b6;
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #9b59b6, #e91e63);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-buttons { display: flex; gap: 15px; }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: linear-gradient(45deg, #9b59b6, #e91e63); color: white; }
+        .btn-secondary { background: rgba(255, 255, 255, 0.1); color: white; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4); }
+        
+        .main-grid { display: grid; grid-template-columns: 400px 1fr; gap: 30px; }
+        .panel {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(155, 89, 182, 0.3);
+        }
+        .panel-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #9b59b6;
+        }
+        .mode-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .tab.active { background: rgba(155, 89, 182, 0.3); border-color: #9b59b6; }
+        
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; color: #bdc3c7; font-weight: 500; }
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(155, 89, 182, 0.3);
+            border-radius: 8px;
+            color: white;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 100px;
+        }
+        textarea:focus, input[type="text"]:focus { outline: none; border-color: #9b59b6; }
+        
+        .quick-prompts { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .chip {
+            padding: 6px 12px;
+            background: rgba(155, 89, 182, 0.2);
+            border: 1px solid #9b59b6;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+        .chip:hover { background: rgba(155, 89, 182, 0.4); }
+        
+        .style-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 20px; }
+        .style-option {
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .style-option:hover { background: rgba(155, 89, 182, 0.2); }
+        .style-option.selected { border-color: #9b59b6; background: rgba(155, 89, 182, 0.3); }
+        .style-icon { font-size: 24px; margin-bottom: 5px; }
+        
+        .size-options { display: flex; gap: 10px; }
+        .size-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .size-btn.active { border-color: #9b59b6; background: rgba(155, 89, 182, 0.3); }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            background: linear-gradient(45deg, #9b59b6, #e91e63);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin-top: 20px;
+        }
+        .generate-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(155, 89, 182, 0.5); }
+        .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .result-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .result-tab {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            transition: all 0.3s;
+        }
+        .result-tab.active { background: linear-gradient(45deg, #9b59b6, #e91e63); }
+        
+        .result-area {
+            min-height: 500px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            padding: 30px;
+        }
+        .result-placeholder { text-align: center; color: #7f8c8d; }
+        .result-image { max-width: 100%; border-radius: 10px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); }
+        
+        .loading { display: none; text-align: center; }
+        .loading.active { display: block; }
+        .spinner {
+            width: 60px; height: 60px;
+            border: 4px solid rgba(155, 89, 182, 0.3);
+            border-top-color: #9b59b6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .stats { display: flex; gap: 20px; margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.3); border-radius: 8px; }
+        .stat-item { display: flex; align-items: center; gap: 8px; }
+        
+        .error-message {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+        .error-message.show { display: block; }
+        
+        .upload-area {
+            border: 2px dashed rgba(155, 89, 182, 0.5);
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
+        }
+        .upload-area:hover { border-color: #9b59b6; background: rgba(155, 89, 182, 0.1); }
+        .hidden { display: none !important; }
+        
+        .tab-content { display: none; width: 100%; }
+        .tab-content.active { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; }
+
+        @media (max-width: 968px) { .main-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo"><span>漫</span><span>MangaAI Pro</span></div>
+            <div class="nav-buttons">
+                <button class="btn btn-primary">✨ Generar</button>
+                <button class="btn btn-secondary">🖼️ Galería</button>
+                <button class="btn btn-secondary">📁 Proyectos</button>
+                <button class="btn btn-secondary">⭐ Gratis</button>
+            </div>
+        </div>
+    </header>
+
+    <div id="puterBanner" style="display:flex;align-items:center;justify-content:center;padding:10px 20px;background:rgba(155,89,182,0.15);border-bottom:1px solid rgba(155,89,182,0.4);font-size:14px;color:#bdc3c7;gap:8px;">
+        <div class="spinner" style="width:16px;height:16px;border-width:2px;margin:0;"></div>
+        Cargando motor de IA...
+    </div>
+    <div class="container">
+        <div class="main-grid">
+            <!-- Panel Izquierdo -->
+            <div class="left-panel">
+                <div class="panel">
+                    <div class="panel-title">🎯 Modo</div>
+                    <div class="mode-tabs">
+                        <div class="tab active" data-mode="text2img">📝 Texto → Imagen</div>
+                        <div class="tab" data-mode="img2img">🖼️ Imagen → Manga</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>✏️ Prompt</label>
+                        <textarea id="prompt" placeholder="Describe tu escena... (ej: chica anime con cabello plateado en jardín de cerezos)"></textarea>
+                    </div>
+
+                    <div class="quick-prompts">
+                        <span class="chip" data-prompt="cherry blossoms, japanese garden, beautiful anime girl"> Cerezos</span>
+                        <span class="chip" data-prompt="samurai warrior, traditional armor, katana, dramatic pose">⚔️ Samurai</span>
+                        <span class="chip" data-prompt="cyberpunk city, neon lights, futuristic, rain">🏙️ Cyberpunk</span>
+                        <span class="chip" data-prompt="majestic dragon, epic fantasy, detailed scales">🐉 Dragón</span>
+                        <span class="chip" data-prompt="magical girl, glowing staff, sparkles, transformation">✨ Magical girl</span>
+                    </div>
+
+                    <div class="upload-area hidden" id="uploadArea">
+                        <input type="file" id="imageInput" accept="image/*" class="hidden">
+                        <div>📤 Imagen de referencia</div>
+                        <small>PNG, JPG • Máx 5MB</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label> Estilo</label>
+                        <div class="style-grid">
+                            <div class="style-option selected" data-style="manga"><div class="style-icon">📖</div><div>Manga</div></div>
+                            <div class="style-option" data-style="anime"><div class="style-icon"></div><div>Anime</div></div>
+                            <div class="style-option" data-style="watercolor"><div class="style-icon"></div><div>Acuarela</div></div>
+                            <div class="style-option" data-style="cel"><div class="style-icon">️</div><div>Cel</div></div>
+                            <div class="style-option" data-style="realistic"><div class="style-icon"></div><div>Realista</div></div>
+                            <div class="style-option" data-style="chibi"><div class="style-icon"></div><div>Chibi</div></div>
+                            <div class="style-option" data-style="mecha"><div class="style-icon"></div><div>Mecha</div></div>
+                            <div class="style-option" data-style="fantasy"><div class="style-icon"></div><div>Fantasía</div></div>
+                            <div class="style-option" data-style="sketch"><div class="style-icon">✏️</div><div>Boceto</div></div>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <label>⚙️ Ajustes</label>
+                        <div style="margin-bottom: 15px;">
+                            <label>Calidad (CFG): <span id="cfgValue">7.5</span></label>
+                            <input type="range" id="cfgScale" min="1" max="20" step="0.5" value="7.5" style="width: 100%;">
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <label>📐 Tamaño</label>
+                        <div class="size-options">
+                            <div class="size-btn active" data-size="1024x1024">1:1</div>
+                            <div class="size-btn" data-size="1024x1792">2:3</div>
+                            <div class="size-btn" data-size="1792x1024">3:2</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>▶️ Prompt Negativo</label>
+                        <textarea id="negativePrompt" placeholder="ugly, blurry, low quality, deformed" style="min-height: 60px;"></textarea>
+                    </div>
+
+                    <button class="generate-btn" id="generateBtn">✨ Generar con IA</button>
+                    <div class="error-message" id="errorMessage"></div>
+                </div>
+            </div>
+
+            <!-- Panel Derecho -->
+            <div class="right-panel">
+                <div class="panel">
+                    <div class="result-tabs">
+                        <button class="result-tab active" data-tab="resultado">🎨 Resultado</button>
+                        <button class="result-tab" data-tab="variaciones">🔄 Variaciones</button>
+                        <button class="result-tab" data-tab="historial">📚 Historial</button>
+                        <button class="result-tab" data-tab="favoritos">❤️ Favoritos</button>
+                    </div>
+
+                    <div class="result-area">
+                        <div class="tab-content active" id="tab-resultado">
+                            <div class="result-placeholder" id="placeholder">
+                                <div style="font-size: 64px; margin-bottom: 20px;">🎨</div>
+                                <div style="font-size: 18px; margin-bottom: 10px;">Tu creación aparecerá aquí</div>
+                                <div style="color: #7f8c8d;">Configura tu prompt y haz clic en Generar</div>
+                            </div>
+                            <div class="loading" id="loading">
+                                <div class="spinner"></div>
+                                <div>Generando tu imagen...</div>
+                            </div>
+                            <img id="resultImage" class="result-image hidden" alt="Imagen generada">
+                        </div>
+                        
+                        <div class="tab-content" id="tab-variaciones">
+                            <div class="result-placeholder"><div style="font-size: 48px;">🔄</div><div>Genera una imagen primero</div></div>
+                        </div>
+                        <div class="tab-content" id="tab-historial">
+                            <div class="result-placeholder"><div style="font-size: 48px;">📭</div><div>Aún no hay historial</div></div>
+                        </div>
+                        <div class="tab-content" id="tab-favoritos">
+                            <div class="result-placeholder"><div style="font-size: 48px;">❤️</div><div>Aún no hay favoritos</div></div>
+                        </div>
+                    </div>
+
+                    <div class="stats">
+                        <div class="stat-item"><span>📊</span><span>Generadas: <strong id="generatedCount">0</strong></span></div>
+                        <div class="stat-item"><span>⚡</span><span>Créditos: <strong>∞</strong></span></div>
+                        <div class="stat-item"><span>💾</span><span>Almacenamiento: <strong>0 MB</strong></span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Puter.js -->
+    <script>
+        // Carga puter.js dinámicamente y espera a que esté listo
+        window._puterReady = false;
+        window._puterError = false;
+        const puterScript = document.createElement('script');
+        puterScript.src = 'https://js.puter.com/v2/';
+        puterScript.onload = () => { window._puterReady = true; updatePuterStatus(); };
+        puterScript.onerror = () => { window._puterError = true; updatePuterStatus(); };
+        document.head.appendChild(puterScript);
+
+        function updatePuterStatus() {
+            const banner = document.getElementById('puterBanner');
+            if (!banner) return;
+            if (window._puterError) {
+                banner.style.display = 'flex';
+                banner.innerHTML = '⚠️ No se pudo cargar Puter.js — Desactiva tu bloqueador de anuncios y recarga la página.';
+                banner.style.background = 'rgba(231,76,60,0.25)';
+                banner.style.borderColor = '#e74c3c';
+            } else if (window._puterReady) {
+                banner.style.display = 'none';
+            }
+        }
+    </script>
+
+    <script>
+        let currentMode = 'text2img';
+        let selectedStyle = 'manga';
+        let selectedSize = '1024x1024';
+        let generatedCount = 0;
+
+        const promptInput = document.getElementById('prompt');
+        const negativePromptInput = document.getElementById('negativePrompt');
+        const generateBtn = document.getElementById('generateBtn');
+        const loading = document.getElementById('loading');
+        const resultImage = document.getElementById('resultImage');
+        const placeholder = document.getElementById('placeholder');
+        const errorMessage = document.getElementById('errorMessage');
+        const cfgScale = document.getElementById('cfgScale');
+        const cfgValue = document.getElementById('cfgValue');
+        const uploadArea = document.getElementById('uploadArea');
+        const imageInput = document.getElementById('imageInput');
+
+        document.querySelectorAll('.mode-tabs .tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.mode-tabs .tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentMode = tab.dataset.mode;
+                uploadArea.classList.toggle('hidden', currentMode !== 'img2img');
+            });
+        });
+
+        document.querySelectorAll('.result-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        document.querySelectorAll('.style-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.style-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+                selectedStyle = option.dataset.style;
+            });
+        });
+
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedSize = btn.dataset.size;
+            });
+        });
+
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => promptInput.value = chip.dataset.prompt);
+        });
+
+        cfgScale.addEventListener('input', () => cfgValue.textContent = cfgScale.value);
+        uploadArea.addEventListener('click', () => imageInput.click());
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    uploadArea.innerHTML = `<img src="${ev.target.result}" style="max-width: 100%; max-height: 200px; border-radius: 8px;">`;
+                };
+                reader.readAsDataURL(e.target.files[0]);
+            }
+        });
+
+        generateBtn.addEventListener('click', generateImage);
+
+        async function generateImage() {
+            // Verificar que puter.js cargó correctamente
+            if (typeof puter === 'undefined') {
+                showError('⚠️ Puter.js no está cargado. Desactiva tu bloqueador de anuncios y recarga la página.');
+                return;
+            }
+
+            const prompt = promptInput.value.trim();
+            if (!prompt) { showError('Por favor, escribe un prompt'); return; }
+
+            loading.classList.add('active');
+            placeholder.style.display = 'none';
+            resultImage.classList.add('hidden');
+            errorMessage.classList.remove('show');
+            generateBtn.disabled = true;
+
+            const stylePrompts = {
+                manga: 'manga style, black and white, detailed linework',
+                anime: 'anime style, vibrant colors, cel shaded',
+                watercolor: 'watercolor painting style, soft colors, artistic',
+                cel: 'cel animation style, flat colors, clean lines',
+                realistic: 'photorealistic, highly detailed, 8k quality',
+                chibi: 'chibi style, cute, super deformed, kawaii',
+                mecha: 'mecha style, robots, mechanical details, sci-fi',
+                fantasy: 'fantasy art style, magical, epic, detailed',
+                sketch: 'pencil sketch, rough lines, artistic, monochrome'
+            };
+
+            const fullPrompt = `${prompt}, ${stylePrompts[selectedStyle]}, masterpiece, best quality, ultra detailed, 8k`;
+
+            try {
+                const [width, height] = selectedSize.split('x').map(Number);
+                const imgEl = await puter.ai.txt2img(fullPrompt, {
+                    model: 'black-forest-labs/flux-schnell',
+                    width: width,
+                    height: height
+                });
+
+                // puter.js devuelve un HTMLImageElement listo para usar
+                await new Promise((resolve, reject) => {
+                    if (imgEl.complete && imgEl.naturalWidth > 0) {
+                        resolve();
+                    } else {
+                        imgEl.onload = resolve;
+                        imgEl.onerror = () => reject(new Error('No se pudo cargar la imagen generada'));
+                    }
+                });
+                resultImage.src = imgEl.src;
+
+                resultImage.classList.remove('hidden');
+                loading.classList.remove('active');
+                generatedCount++;
+                document.getElementById('generatedCount').textContent = generatedCount;
+                resultImage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            } catch (error) {
+                console.error('Error completo:', error);
+                loading.classList.remove('active');
+                const msg = error?.message || error?.toString() || 'Error desconocido';
+                showError('Error: ' + msg);
+            } finally {
+                generateBtn.disabled = false;
+            }
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            setTimeout(() => errorMessage.classList.remove('show'), 5000);
+        }
+    </script>
+</body>
+</html>
