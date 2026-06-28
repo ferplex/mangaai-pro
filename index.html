@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Nautilus Lab — Asset Generator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Inter:wght@300;400;500;600&display=swap');
+
+  :root{
+    --bg:        #0a0a12;
+    --bg2:       #0f0f1e;
+    --bg3:       #141428;
+    --panel:     #1a1a32;
+    --panel2:    #1f1f3a;
+    --border:    #2a2a4a;
+    --border2:   #3a3a6a;
+    --cyan:      #00d4ff;
+    --cyan2:     #00aacc;
+    --magenta:   #ff00aa;
+    --orange:    #ff6600;
+    --green:     #00ff88;
+    --text:      #e8e8ff;
+    --text2:     #9090bb;
+    --text3:     #5a5a88;
+    --gold:      #ffaa00;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+  /* SCAN LINE ATMOSPHERE */
+  body::before{
+    content:'';position:fixed;inset:0;
+    background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,212,255,.015) 2px,rgba(0,212,255,.015) 4px);
+    pointer-events:none;z-index:0;
+  }
+
+  /* HEADER */
+  header{
+    position:relative;z-index:10;
+    background:linear-gradient(180deg,rgba(0,212,255,.08) 0%,transparent 100%);
+    border-bottom:1px solid var(--border);
+    padding:14px 24px;
+    display:flex;align-items:center;justify-content:space-between;
+    backdrop-filter:blur(8px);
+  }
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-icon{
+    width:36px;height:36px;
+    background:linear-gradient(135deg,var(--cyan),var(--magenta));
+    border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Orbitron',monospace;font-weight:900;font-size:14px;color:#fff;
+    box-shadow:0 0 16px rgba(0,212,255,.4);
+  }
+  .logo-text{font-family:'Orbitron',monospace;font-size:13px;font-weight:700;letter-spacing:2px;}
+  .logo-sub{font-size:10px;color:var(--text3);letter-spacing:3px;font-family:'Share Tech Mono',monospace;}
+
+  .kofi-btn{
+    display:flex;align-items:center;gap:7px;
+    background:linear-gradient(135deg,#ff5e5b,#ff3860);
+    border:none;border-radius:8px;
+    padding:8px 16px;color:#fff;font-size:12px;font-weight:600;
+    cursor:pointer;text-decoration:none;
+    box-shadow:0 0 12px rgba(255,56,96,.4);
+    transition:all .2s;letter-spacing:.5px;
+  }
+  .kofi-btn:hover{transform:translateY(-1px);box-shadow:0 0 20px rgba(255,56,96,.6);}
+
+  /* MAIN LAYOUT */
+  .main{position:relative;z-index:1;display:grid;grid-template-columns:320px 1fr;gap:0;min-height:calc(100vh - 64px);}
+
+  /* SIDEBAR */
+  .sidebar{
+    background:var(--bg2);
+    border-right:1px solid var(--border);
+    padding:20px 16px;
+    overflow-y:auto;max-height:calc(100vh - 64px);
+  }
+
+  .section-label{
+    font-family:'Share Tech Mono',monospace;
+    font-size:10px;letter-spacing:3px;color:var(--cyan);
+    margin-bottom:10px;display:flex;align-items:center;gap:6px;
+  }
+  .section-label::before{content:'▸';}
+
+  /* PROMPT */
+  textarea{
+    width:100%;background:var(--panel);
+    border:1px solid var(--border);border-radius:8px;
+    color:var(--text);font-family:'Inter',sans-serif;font-size:13px;
+    padding:12px;resize:none;height:90px;
+    outline:none;transition:border-color .2s;
+    line-height:1.5;
+  }
+  textarea:focus{border-color:var(--cyan);}
+  textarea::placeholder{color:var(--text3);}
+
+  /* QUICK TAGS */
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
+  .tag{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:20px;padding:4px 10px;
+    font-size:11px;color:var(--text2);cursor:pointer;
+    transition:all .15s;white-space:nowrap;
+  }
+  .tag:hover,.tag.active{
+    background:rgba(0,212,255,.12);
+    border-color:var(--cyan);color:var(--cyan);
+  }
+
+  /* CATEGORÍAS */
+  .cat-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px;}
+  .cat-btn{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:8px;padding:10px 6px;
+    text-align:center;cursor:pointer;transition:all .18s;
+  }
+  .cat-btn .icon{font-size:18px;display:block;margin-bottom:3px;}
+  .cat-btn .label{font-size:10px;color:var(--text2);letter-spacing:.5px;}
+  .cat-btn:hover,.cat-btn.active{
+    background:rgba(0,212,255,.1);
+    border-color:var(--cyan);
+  }
+  .cat-btn.active .label{color:var(--cyan);}
+
+  /* FILTROS / ESTILOS */
+  .filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:16px;}
+  .filter-btn{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:8px;padding:8px 6px;
+    text-align:center;cursor:pointer;transition:all .18s;
+    font-size:11px;color:var(--text2);
+  }
+  .filter-btn:hover,.filter-btn.active{
+    background:rgba(255,0,170,.1);
+    border-color:var(--magenta);color:var(--magenta);
+  }
+
+  /* CONTADOR */
+  .counter-bar{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:10px;padding:12px 14px;
+    display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .counter-info{font-size:11px;color:var(--text3);}
+  .counter-dots{display:flex;gap:5px;}
+  .dot{
+    width:10px;height:10px;border-radius:50%;
+    background:var(--border);transition:background .3s;
+  }
+  .dot.used{background:var(--magenta);}
+  .dot.free{background:var(--cyan);box-shadow:0 0 6px var(--cyan);}
+
+  /* GENERATE BTN */
+  .gen-btn{
+    width:100%;padding:13px;
+    background:linear-gradient(135deg,var(--cyan),var(--magenta));
+    border:none;border-radius:10px;
+    color:#fff;font-family:'Orbitron',monospace;
+    font-size:13px;font-weight:700;letter-spacing:2px;
+    cursor:pointer;transition:all .2s;
+    box-shadow:0 0 20px rgba(0,212,255,.3);
+    position:relative;overflow:hidden;
+  }
+  .gen-btn::before{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.15));
+    pointer-events:none;
+  }
+  .gen-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 0 30px rgba(0,212,255,.5);}
+  .gen-btn:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+
+  /* CANVAS AREA */
+  .canvas-area{
+    background:var(--bg);padding:20px;
+    display:flex;flex-direction:column;gap:16px;
+  }
+
+  .canvas-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding-bottom:12px;border-bottom:1px solid var(--border);
+  }
+  .canvas-title{font-family:'Orbitron',monospace;font-size:12px;letter-spacing:2px;color:var(--text2);}
+
+  /* RESULTADO */
+  .result-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+    flex:1;
+  }
+  .img-card{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:12px;overflow:hidden;
+    aspect-ratio:1;position:relative;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .img-card canvas{width:100%;height:100%;object-fit:cover;display:block;}
+  .img-card .placeholder{
+    text-align:center;padding:20px;
+  }
+  .img-card .placeholder .ph-icon{font-size:32px;margin-bottom:8px;opacity:.3;}
+  .img-card .placeholder p{font-size:11px;color:var(--text3);}
+
+  .download-btn{
+    position:absolute;bottom:8px;right:8px;
+    background:rgba(0,0,0,.7);border:1px solid var(--border2);
+    border-radius:6px;padding:5px 8px;
+    font-size:10px;color:var(--cyan);cursor:pointer;
+    transition:all .2s;backdrop-filter:blur(4px);
+    display:none;
+  }
+  .img-card:hover .download-btn{display:block;}
+
+  /* STATUS BAR */
+  .status-bar{
+    background:var(--panel);border:1px solid var(--border);
+    border-radius:8px;padding:10px 14px;
+    display:flex;align-items:center;gap:16px;
+    font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text3);
+  }
+  .status-item{display:flex;align-items:center;gap:5px;}
+  .status-dot{width:6px;height:6px;border-radius:50%;background:var(--green);}
+  .status-dot.warn{background:var(--gold);}
+  .status-dot.off{background:var(--border);}
+
+  /* LOADING */
+  .loading{
+    display:none;position:absolute;inset:0;
+    background:rgba(10,10,18,.85);
+    border-radius:12px;
+    flex-direction:column;align-items:center;justify-content:center;
+    backdrop-filter:blur(4px);z-index:10;
+  }
+  .loading.show{display:flex;}
+  .spinner{
+    width:36px;height:36px;
+    border:2px solid var(--border);
+    border-top-color:var(--cyan);
+    border-radius:50%;
+    animation:spin .8s linear infinite;
+    margin-bottom:8px;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .load-text{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:2px;}
+
+  /* LIMIT MODAL */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;
+    background:rgba(0,0,0,.75);z-index:100;
+    align-items:center;justify-content:center;backdrop-filter:blur(6px);
+  }
+  .modal-overlay.show{display:flex;}
+  .modal{
+    background:var(--bg2);border:1px solid var(--border2);
+    border-radius:16px;padding:28px;max-width:380px;width:90%;
+    text-align:center;
+    box-shadow:0 0 40px rgba(255,0,170,.2);
+  }
+  .modal h2{font-family:'Orbitron',monospace;font-size:16px;margin-bottom:8px;color:var(--magenta);}
+  .modal p{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px;}
+  .modal .kofi-big{
+    display:inline-flex;align-items:center;gap:8px;
+    background:linear-gradient(135deg,#ff5e5b,#ff3860);
+    border-radius:10px;padding:12px 24px;
+    color:#fff;font-size:13px;font-weight:600;
+    text-decoration:none;cursor:pointer;border:none;
+    box-shadow:0 0 20px rgba(255,56,96,.4);
+    transition:all .2s;margin-bottom:10px;width:100%;justify-content:center;
+  }
+  .modal .kofi-big:hover{transform:translateY(-1px);}
+  .modal .close-modal{
+    background:none;border:1px solid var(--border);
+    border-radius:8px;padding:8px 20px;
+    color:var(--text3);font-size:12px;cursor:pointer;
+    width:100%;margin-top:6px;transition:all .2s;
+  }
+  .modal .close-modal:hover{border-color:var(--border2);color:var(--text);}
+
+  /* WATERMARK badge */
+  .wm-badge{
+    position:absolute;bottom:6px;left:6px;
+    background:rgba(0,0,0,.6);backdrop-filter:blur(4px);
+    border-radius:4px;padding:2px 6px;
+    font-family:'Share Tech Mono',monospace;font-size:8px;
+    color:rgba(0,212,255,.8);letter-spacing:1px;
+    pointer-events:none;
+  }
+
+  /* PROMO */
+  .promo-bar{
+    background:linear-gradient(135deg,rgba(0,212,255,.08),rgba(255,0,170,.08));
+    border:1px solid var(--border);border-radius:10px;
+    padding:14px 18px;
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+  }
+  .promo-text{font-size:12px;color:var(--text2);line-height:1.5;}
+  .promo-text strong{color:var(--cyan);}
+
+  @media(max-width:700px){
+    .main{grid-template-columns:1fr;}
+    .sidebar{max-height:none;border-right:none;border-bottom:1px solid var(--border);}
+    .result-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">NL</div>
+    <div>
+      <div class="logo-text">NAUTILUS LAB</div>
+      <div class="logo-sub">ASSET GENERATOR</div>
+    </div>
+  </div>
+  <a class="kofi-btn" href="https://ko-fi.com/nautiluslab" target="_blank">
+    ☕ Apoya en Ko-fi
+  </a>
+</header>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <!-- CONTADOR DIARIO -->
+    <div class="counter-bar">
+      <div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:2px;">Renders hoy</div>
+        <div class="counter-info" id="counter-label">3 disponibles gratis</div>
+      </div>
+      <div class="counter-dots">
+        <div class="dot free" id="d1"></div>
+        <div class="dot free" id="d2"></div>
+        <div class="dot free" id="d3"></div>
+      </div>
+    </div>
+
+    <!-- PROMPT -->
+    <div class="section-label" style="margin-top:4px;">Describe tu asset</div>
+    <textarea id="prompt-input" placeholder="ej: laser pistol toy neon green, floating, game prop..."></textarea>
+
+    <!-- QUICK TAGS -->
+    <div class="tags" id="tag-container">
+      <span class="tag" data-tag="laser gun toy">⚡ Laser gun</span>
+      <span class="tag" data-tag="bazooka toy colorful">💥 Bazooka</span>
+      <span class="tag" data-tag="sci-fi spaceship">🚀 Nave</span>
+      <span class="tag" data-tag="fantasy crystal magic">✨ Cristal</span>
+      <span class="tag" data-tag="medieval castle tower">🏰 Medieval</span>
+      <span class="tag" data-tag="jungle tree tropical">🌴 Selva</span>
+      <span class="tag" data-tag="ocean coral reef">🐠 Océano</span>
+      <span class="tag" data-tag="asteroid space rock">🪐 Espacio</span>
+      <span class="tag" data-tag="western cactus saloon">🤠 Western</span>
+      <span class="tag" data-tag="cyberpunk neon city prop">🌆 Cyber</span>
+    </div>
+
+    <!-- CATEGORÍA -->
+    <div class="section-label">Categoría</div>
+    <div class="cat-grid" id="cat-container">
+      <div class="cat-btn active" data-cat="weapons"><span class="icon">⚔️</span><span class="label">Weapons</span></div>
+      <div class="cat-btn" data-cat="scenery"><span class="icon">🌲</span><span class="label">Scenery</span></div>
+      <div class="cat-btn" data-cat="space"><span class="icon">🪐</span><span class="label">Space</span></div>
+      <div class="cat-btn" data-cat="props"><span class="icon">📦</span><span class="label">Props</span></div>
+      <div class="cat-btn" data-cat="creatures"><span class="icon">🐉</span><span class="label">Creatures</span></div>
+      <div class="cat-btn" data-cat="vehicles"><span class="icon">🚀</span><span class="label">Vehicles</span></div>
+    </div>
+
+    <!-- FILTRO / ESTILO VISUAL -->
+    <div class="section-label">Filtro visual</div>
+    <div class="filter-grid" id="filter-container">
+      <div class="filter-btn active" data-filter="cyberpunk neon glow">⚡ Cyberpunk</div>
+      <div class="filter-btn" data-filter="retro 80s arcade pixel">🕹️ Retro 80s</div>
+      <div class="filter-btn" data-filter="dark fantasy dramatic">🌑 Dark Fantasy</div>
+      <div class="filter-btn" data-filter="voxel art colorful 3d">🧱 Voxel Art</div>
+      <div class="filter-btn" data-filter="flat vector clean minimal">📐 Flat Vector</div>
+      <div class="filter-btn" data-filter="watercolor painted soft">🎨 Acuarela</div>
+      <div class="filter-btn" data-filter="isometric 3d render game">📊 Isométrico</div>
+      <div class="filter-btn" data-filter="glitch distorted neon">👾 Glitch</div>
+    </div>
+
+    <!-- GENERATE -->
+    <button class="gen-btn" id="gen-btn" onclick="generateAssets()">
+      ⚡ GENERAR 3 ASSETS
+    </button>
+
+  </aside>
+
+  <!-- CANVAS AREA -->
+  <div class="canvas-area">
+
+    <div class="canvas-header">
+      <span class="canvas-title">RESULTADO — PACK x3</span>
+      <span style="font-size:11px;color:var(--text3);font-family:'Share Tech Mono',monospace;" id="prompt-display">Escribe un prompt y genera</span>
+    </div>
+
+    <!-- 3 IMAGE CARDS -->
+    <div class="result-grid">
+      <div class="img-card" id="card-1">
+        <div class="placeholder"><div class="ph-icon">🎮</div><p>Asset 1</p></div>
+        <div class="loading" id="load-1"><div class="spinner"></div><div class="load-text">RENDERING...</div></div>
+      </div>
+      <div class="img-card" id="card-2">
+        <div class="placeholder"><div class="ph-icon">🎮</div><p>Asset 2</p></div>
+        <div class="loading" id="load-2"><div class="spinner"></div><div class="load-text">RENDERING...</div></div>
+      </div>
+      <div class="img-card" id="card-3">
+        <div class="placeholder"><div class="ph-icon">🎮</div><p>Asset 3</p></div>
+        <div class="loading" id="load-3"><div class="spinner"></div><div class="load-text">RENDERING...</div></div>
+      </div>
+    </div>
+
+    <!-- STATUS -->
+    <div class="status-bar">
+      <div class="status-item"><div class="status-dot" id="api-dot"></div><span>Pollinations API</span></div>
+      <div class="status-item"><div class="status-dot" id="wm-dot"></div><span>Watermark ON</span></div>
+      <div class="status-item" style="margin-left:auto;">
+        <span id="status-text" style="color:var(--text3);">Listo para generar</span>
+      </div>
+    </div>
+
+    <!-- PROMO -->
+    <div class="promo-bar">
+      <div class="promo-text">
+        <strong>Nautilus Lab</strong> — Indie asset creation &amp; automation para studios.<br>
+        Muestra gratuita con marca de agua · <strong>3 renders/día</strong>
+      </div>
+      <a class="kofi-btn" href="https://ko-fi.com/nautiluslab" target="_blank" style="white-space:nowrap;">
+        ☕ Apoya
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<!-- LIMIT MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div style="font-size:36px;margin-bottom:12px;">⚡</div>
+    <h2>Límite diario alcanzado</h2>
+    <p>Usaste tus <strong>3 renders gratuitos</strong> de hoy.<br>
+    Regresa mañana o apoya en Ko-fi para acceder al pack completo de assets y prompts premium.</p>
+    <a class="kofi-big" href="https://ko-fi.com/nautiluslab" target="_blank">☕ Apoyar en Ko-fi</a>
+    <button class="close-modal" onclick="closeModal()">Volver mañana</button>
+  </div>
+</div>
+
+<script>
+// ── ESTADO ─────────────────────────────────────────────────────────────
+const TODAY = new Date().toDateString();
+let used = 0;
+const stored = JSON.parse(localStorage.getItem('nl_gen') || '{}');
+if(stored.date === TODAY) used = stored.used || 0;
+const MAX = 3;
+
+let selectedFilter = 'cyberpunk neon glow';
+let selectedCat    = 'weapons';
+
+// ── INIT UI ────────────────────────────────────────────────────────────
+updateCounter();
+
+// Tags
+document.querySelectorAll('.tag').forEach(t => {
+  t.onclick = () => {
+    const inp = document.getElementById('prompt-input');
+    const tag = t.dataset.tag;
+    const cur = inp.value.trim();
+    inp.value = cur ? cur + ', ' + tag : tag;
+  };
+});
+
+// Categorías
+document.querySelectorAll('.cat-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.cat-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    selectedCat = b.dataset.cat;
+  };
+});
+
+// Filtros
+document.querySelectorAll('.filter-btn').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    selectedFilter = b.dataset.filter;
+  };
+});
+
+// ── COUNTER ────────────────────────────────────────────────────────────
+function updateCounter(){
+  const rem = MAX - used;
+  document.getElementById('counter-label').textContent =
+    rem > 0 ? `${rem} disponible${rem>1?'s':''} hoy` : 'Límite alcanzado';
+
+  ['d1','d2','d3'].forEach((id,i) => {
+    const d = document.getElementById(id);
+    d.className = 'dot ' + (i < used ? 'used' : 'free');
+  });
+  document.getElementById('gen-btn').disabled = used >= MAX;
+}
+
+function saveUsed(){
+  localStorage.setItem('nl_gen', JSON.stringify({date: TODAY, used}));
+}
+
+// ── BUILD PROMPT ───────────────────────────────────────────────────────
+const catModifiers = {
+  weapons:   'video game weapon prop, toy style, no person, isolated object',
+  scenery:   'game scenery prop, environment asset, no person, isolated',
+  space:     'space game prop, sci-fi asset, no person, isolated object',
+  props:     'game inventory item, prop asset, no person, isolated object',
+  creatures: 'fantasy creature icon, game monster, no person, stylized',
+  vehicles:  'game vehicle prop, sci-fi transport, no person, isolated',
+};
+
+function buildPrompt(base, variation){
+  const cat  = catModifiers[selectedCat] || '';
+  const vars = ['vibrant saturated colors', 'dramatic lighting', 'glowing energy effects'];
+  return `${base}, ${selectedFilter}, ${cat}, ${vars[variation]}, white background, high quality game asset, clean render, itch.io ready`;
+}
+
+// ── GENERATE ───────────────────────────────────────────────────────────
+async function generateAssets(){
+  if(used >= MAX){ showModal(); return; }
+
+  const base = document.getElementById('prompt-input').value.trim();
+  if(!base){ document.getElementById('prompt-input').focus(); return; }
+
+  used++;
+  saveUsed();
+  updateCounter();
+
+  document.getElementById('prompt-display').textContent = base.slice(0,50) + (base.length>50?'...':'');
+  document.getElementById('status-text').textContent = 'Generando...';
+  document.getElementById('gen-btn').disabled = true;
+
+  // Limpiar cards anteriores
+  [1,2,3].forEach(i => {
+    const card = document.getElementById('card-'+i);
+    const old  = card.querySelector('canvas');
+    const wm   = card.querySelector('.wm-badge');
+    const dl   = card.querySelector('.download-btn');
+    if(old) old.remove();
+    if(wm)  wm.remove();
+    if(dl)  dl.remove();
+    card.querySelector('.placeholder').style.display = 'flex';
+    document.getElementById('load-'+i).classList.add('show');
+  });
+
+  const seeds = [
+    Math.floor(Math.random()*99999),
+    Math.floor(Math.random()*99999),
+    Math.floor(Math.random()*99999),
+  ];
+
+  const results = await Promise.allSettled(seeds.map((seed,i) =>
+    loadAndRender(buildPrompt(base, i), seed, i+1)
+  ));
+
+  const ok = results.filter(r => r.status === 'fulfilled').length;
+  document.getElementById('status-text').textContent = `${ok}/3 assets generados`;
+  if(used < MAX) document.getElementById('gen-btn').disabled = false;
+}
+
+// ── LOAD + WATERMARK ──────────────────────────────────────────────────
+function loadAndRender(prompt, seed, idx){
+  return new Promise((resolve, reject) => {
+    const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&seed=${seed}&nologo=true`;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const card = document.getElementById('card-'+idx);
+      document.getElementById('load-'+idx).classList.remove('show');
+      card.querySelector('.placeholder').style.display = 'none';
+
+      // Canvas
+      const cv = document.createElement('canvas');
+      cv.width = 512; cv.height = 512;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0, 512, 512);
+
+      // Watermark diagonal
+      ctx.save();
+      ctx.translate(256, 256);
+      ctx.rotate(-Math.PI / 6);
+      ctx.font = 'bold 22px monospace';
+      ctx.fillStyle = 'rgba(0,212,255,0.13)';
+      ctx.textAlign = 'center';
+      for(let y = -220; y < 260; y += 70){
+        ctx.fillText('NAUTILUS LAB', 0, y);
+      }
+      ctx.restore();
+
+      // Watermark esquina
+      ctx.fillStyle = 'rgba(0,0,0,0.55)';
+      ctx.fillRect(0, 482, 512, 30);
+      ctx.font = 'bold 11px monospace';
+      ctx.fillStyle = 'rgba(0,212,255,0.85)';
+      ctx.textAlign = 'left';
+      ctx.fillText('© NAUTILUS LAB — nautlab.itch.io', 8, 500);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.fillText('SAMPLE', 504, 500);
+
+      cv.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:12px;';
+      card.appendChild(cv);
+
+      // Botón download
+      const dl = document.createElement('button');
+      dl.className = 'download-btn';
+      dl.textContent = '⬇ Descargar';
+      dl.onclick = () => {
+        const a = document.createElement('a');
+        a.href = cv.toDataURL('image/png');
+        a.download = `nautiluslab_asset_${idx}_${Date.now()}.png`;
+        a.click();
+      };
+      card.appendChild(dl);
+
+      resolve();
+    };
+    img.onerror = () => {
+      document.getElementById('load-'+idx).classList.remove('show');
+      document.getElementById('card-'+idx).querySelector('.placeholder').style.display = 'flex';
+      reject();
+    };
+    img.src = url;
+  });
+}
+
+// ── MODAL ──────────────────────────────────────────────────────────────
+function showModal(){ document.getElementById('modal').classList.add('show'); }
+function closeModal(){ document.getElementById('modal').classList.remove('show'); }
+document.getElementById('modal').onclick = e => { if(e.target.id==='modal') closeModal(); };
+</script>
+</body>
+</html>
